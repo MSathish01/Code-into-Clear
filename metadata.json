@@ -1,0 +1,5 @@
+{
+  "name": "Legacy Code Onboarder",
+  "description": "Instantly transform legacy code into clear documentation, architecture diagrams, and junior developer guides using Gemini.",
+  "requestFramePermissions": []
+}
