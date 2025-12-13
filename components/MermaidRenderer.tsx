@@ -26,9 +26,6 @@ const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart, id = 'mermaid-
         tertiaryColor: '#fff',
         fontFamily: 'Inter',
       },
-      // CRITICAL FOR PDF: Disable HTML labels. 
-      // html2canvas fails to render foreignObject (HTML inside SVG). 
-      // Setting this to false forces pure SVG text, which renders perfectly.
       flowchart: { htmlLabels: false },
     });
   }, []);
@@ -40,21 +37,18 @@ const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart, id = 'mermaid-
       try {
         setError(null);
         
-        // --- Aggressive Cleaning Logic ---
         let cleanChart = chart.trim();
         cleanChart = cleanChart.replace(/```mermaid/g, '').replace(/```/g, '');
         cleanChart = cleanChart.replace(/^mermaid\s*(\n|$)/i, '');
         cleanChart = cleanChart.replace(/%%.*$/gm, ''); // Remove comments
         
         // Fix common AI error: "A, B, C --> D" should be "A & B & C --> D"
-        // This regex matches lines starting with comma-separated alphanumeric IDs followed by an arrow/link
         cleanChart = cleanChart.replace(/^(\s*)((?:[A-Za-z0-9_]+,\s*)+[A-Za-z0-9_]+)(\s*[-=])/gm, (match, indent, nodes, arrow) => {
             return indent + nodes.replace(/,\s*/g, ' & ') + arrow;
         });
 
         cleanChart = cleanChart.trim();
 
-        // Fallback checks
         const typeMatch = cleanChart.match(/^(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|mindmap|timeline)/m);
         if (typeMatch && typeMatch.index !== undefined) {
           cleanChart = cleanChart.substring(typeMatch.index);
@@ -66,7 +60,22 @@ const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart, id = 'mermaid-
 
         const uniqueId = `${id}-${Math.random().toString(36).substr(2, 9)}`;
         const { svg } = await mermaid.render(uniqueId, cleanChart);
-        setSvg(svg);
+        
+        // PDF SCALING FIX:
+        // 1. Remove hardcoded width/height to rely on viewBox.
+        // 2. Remove inline styles that might conflict.
+        let responsiveSvg = svg
+            .replace(/width="[^"]*"/, '')
+            .replace(/height="[^"]*"/, '')
+            .replace(/style="[^"]*"/, '');
+            
+        // Add attributes for proper scaling behavior
+        // Use width="100%" to ensure it fills the container.
+        if (responsiveSvg.includes('<svg')) {
+             responsiveSvg = responsiveSvg.replace('<svg', '<svg width="100%" height="auto" preserveAspectRatio="xMidYMid meet"');
+        }
+
+        setSvg(responsiveSvg);
         
       } catch (err: any) {
         console.error('Mermaid render error:', err);
@@ -96,14 +105,14 @@ const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart, id = 'mermaid-
   return (
     <div className="w-full bg-transparent flex flex-col items-center overflow-visible">
       {/* 
-         CRITICAL STYLE FOR PDF: 
-         Force the SVG to fit the container width (100%) and scale height automatically.
-         This prevents clipping when the diagram is wider than the A4 page.
-         Added margin: auto to force centering.
+         Style override to force SVG responsiveness.
+         This CSS targets the ID specifically to ensure it overrides any internal SVG attributes 
+         if the string manipulation above missed something.
       */}
       <style dangerouslySetInnerHTML={{__html: `
         #${id} svg {
           max-width: 100% !important;
+          width: 100% !important;
           height: auto !important;
           display: block;
           margin-left: auto !important;
