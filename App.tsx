@@ -95,7 +95,7 @@ const App: React.FC = () => {
     setGithubUrl('');
   };
 
-  // Render the Results View if complete
+  // Render the Results View if completed
   if (status === AnalysisStatus.COMPLETE && result) {
     return (
       <div className="min-h-screen bg-slate-50 pb-20 animate-in fade-in duration-500">
