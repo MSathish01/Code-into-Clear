@@ -103,7 +103,7 @@ const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart, id = 'mermaid-
   }
 
   return (
-    <div className="w-full bg-transparent flex flex-col items-center overflow-visible">
+    <div className="w-full bg-transparent flex flex-col items-center overflow-x-auto">
       {/* 
          Style override to force SVG responsiveness.
          This CSS targets the ID specifically to ensure it overrides any internal SVG attributes 
@@ -124,7 +124,7 @@ const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart, id = 'mermaid-
           <div 
             id={id}
             dangerouslySetInnerHTML={{ __html: svg }} 
-            className="mermaid-diagram w-full flex justify-center"
+            className="mermaid-diagram w-full flex justify-center min-w-[300px]"
           />
       ) : (
           <div className="animate-pulse flex flex-col space-y-4 w-full justify-center items-center p-10">

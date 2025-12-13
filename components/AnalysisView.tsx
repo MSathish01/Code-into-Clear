@@ -210,7 +210,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
       
       {/* 
         -------------------------------------------
@@ -363,23 +363,23 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
         HEADER ACTIONS
         ----------------------
       */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200/60 ring-1 ring-slate-100">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200/60 ring-1 ring-slate-100">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
+          <h2 className="text-xl md:text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
             <span className="bg-brand-100 text-brand-600 p-2 rounded-xl">
-              <CheckCircle2 className="w-7 h-7" />
+              <CheckCircle2 className="w-5 h-5 md:w-7 md:h-7" />
             </span>
             Analysis Complete
           </h2>
-          <p className="text-slate-500 mt-2 text-sm ml-16">
+          <p className="text-slate-500 mt-2 text-sm ml-12 md:ml-16">
             Review the sections below. You can download the full PDF report at any time.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3 ml-16 md:ml-0">
+        <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3 ml-0 md:ml-0">
            <button 
             onClick={handlePdfDownload}
             disabled={isGeneratingPdf}
-            className="flex items-center gap-2 px-6 py-3 text-sm font-bold text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-wait"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-wait"
           >
             {isGeneratingPdf ? (
                 <>
@@ -395,7 +395,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
           </button>
           <button 
             onClick={onReset}
-            className="flex items-center gap-2 px-6 py-3 text-sm font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-xl hover:bg-brand-100 transition-all active:scale-95"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-xl hover:bg-brand-100 transition-all active:scale-95"
           >
             <ArrowLeft className="w-4 h-4" />
             Analyze New File
@@ -405,15 +405,15 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
 
       <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[600px] ring-4 ring-slate-50/50 relative">
         
-        {/* Sidebar Navigation */}
-        <div className="md:w-72 bg-slate-50/80 border-b md:border-b-0 md:border-r border-slate-200 flex md:flex-col shrink-0 overflow-x-auto md:overflow-visible p-2 md:p-4 gap-2">
+        {/* Sidebar Navigation (Mobile: Top Scroll Bar) */}
+        <div className="w-full md:w-72 bg-slate-50/80 border-b md:border-b-0 md:border-r border-slate-200 flex flex-row md:flex-col shrink-0 overflow-x-auto md:overflow-visible p-2 md:p-4 gap-2 no-scrollbar">
           <div className="px-4 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest hidden md:block">
             Report Sections
           </div>
           
           <button
             onClick={() => setActiveTab('summary')}
-            className={`flex-1 md:flex-none p-4 rounded-xl text-sm font-bold flex items-center gap-3 transition-all duration-200 group ${
+            className={`flex-none p-3 md:p-4 rounded-xl text-sm font-bold flex items-center gap-3 transition-all duration-200 group whitespace-nowrap ${
               activeTab === 'summary' 
                 ? 'bg-white text-brand-700 shadow-sm ring-1 ring-slate-200' 
                 : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'
@@ -422,12 +422,12 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
             <span className={`p-2 rounded-lg ${activeTab === 'summary' ? 'bg-brand-100 text-brand-600' : 'bg-slate-200/50 text-slate-400 group-hover:text-slate-600'}`}>
                 <BookOpen className="w-4 h-4" />
             </span>
-            <span className="whitespace-nowrap">Logic Summary</span>
+            <span className="">Logic Summary</span>
           </button>
           
           <button
             onClick={() => setActiveTab('diagram')}
-            className={`flex-1 md:flex-none p-4 rounded-xl text-sm font-bold flex items-center gap-3 transition-all duration-200 group ${
+            className={`flex-none p-3 md:p-4 rounded-xl text-sm font-bold flex items-center gap-3 transition-all duration-200 group whitespace-nowrap ${
               activeTab === 'diagram' 
                 ? 'bg-white text-brand-700 shadow-sm ring-1 ring-slate-200' 
                 : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'
@@ -436,12 +436,12 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
             <span className={`p-2 rounded-lg ${activeTab === 'diagram' ? 'bg-brand-100 text-brand-600' : 'bg-slate-200/50 text-slate-400 group-hover:text-slate-600'}`}>
                 <GitGraph className="w-4 h-4" />
             </span>
-            <span className="whitespace-nowrap">Visual Architecture</span>
+            <span className="">Visual Architecture</span>
           </button>
           
           <button
             onClick={() => setActiveTab('guide')}
-            className={`flex-1 md:flex-none p-4 rounded-xl text-sm font-bold flex items-center gap-3 transition-all duration-200 group ${
+            className={`flex-none p-3 md:p-4 rounded-xl text-sm font-bold flex items-center gap-3 transition-all duration-200 group whitespace-nowrap ${
               activeTab === 'guide' 
                 ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20' 
                 : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'
@@ -450,18 +450,18 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
             <span className={`p-2 rounded-lg ${activeTab === 'guide' ? 'bg-white/20 text-white' : 'bg-slate-200/50 text-slate-400 group-hover:text-slate-600'}`}>
                 <FileCode className="w-4 h-4" />
             </span>
-            <span className="whitespace-nowrap">Junior Dev Guide</span>
+            <span className="">Junior Dev Guide</span>
           </button>
         </div>
 
         {/* Content Area */}
-        <div className={`flex-1 overflow-y-auto max-h-[800px] ${activeTab === 'guide' ? 'bg-[#0B1120] text-slate-300' : 'bg-white text-slate-600'}`}>
+        <div className={`flex-1 overflow-y-auto max-h-[calc(100vh-200px)] md:max-h-[800px] ${activeTab === 'guide' ? 'bg-[#0B1120] text-slate-300' : 'bg-white text-slate-600'}`}>
           
           {activeTab === 'summary' && (
-            <div className="p-8 md:p-12 animate-in fade-in duration-300">
-               <div className="mb-8 pb-4 border-b border-slate-100">
-                  <h3 className="text-3xl font-bold text-slate-900 tracking-tight">Plain English Logic</h3>
-                  <p className="text-slate-500 mt-2 text-lg">A jargon-free explanation of the codebase.</p>
+            <div className="p-6 md:p-12 animate-in fade-in duration-300">
+               <div className="mb-6 md:mb-8 pb-4 border-b border-slate-100">
+                  <h3 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Plain English Logic</h3>
+                  <p className="text-slate-500 mt-2 text-base md:text-lg">A jargon-free explanation of the codebase.</p>
                </div>
                <div className="prose prose-slate prose-lg max-w-none text-slate-600 leading-8">
                   <ReactMarkdown>{result.plainEnglishSummary}</ReactMarkdown>
@@ -470,30 +470,30 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
           )}
 
           {activeTab === 'diagram' && (
-             <div className="p-6 md:p-12 animate-in fade-in duration-300 h-full flex flex-col">
-                <div className="mb-8 pb-4 border-b border-slate-100 flex justify-between items-end">
+             <div className="p-4 md:p-12 animate-in fade-in duration-300 h-full flex flex-col">
+                <div className="mb-6 md:mb-8 pb-4 border-b border-slate-100 flex flex-col md:flex-row md:justify-between md:items-end gap-2">
                   <div>
-                    <h3 className="text-3xl font-bold text-slate-900 tracking-tight">Visual Architecture</h3>
-                    <p className="text-slate-500 mt-2 text-lg">Auto-generated system diagram.</p>
+                    <h3 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Visual Architecture</h3>
+                    <p className="text-slate-500 mt-2 text-base md:text-lg">Auto-generated system diagram.</p>
                   </div>
-                  <span className="text-xs font-mono bg-slate-100 text-slate-500 px-3 py-1.5 rounded-full border border-slate-200">Mermaid.js</span>
+                  <span className="text-xs font-mono bg-slate-100 text-slate-500 px-3 py-1.5 rounded-full border border-slate-200 self-start md:self-auto">Mermaid.js</span>
                </div>
-               <div className="flex-1 flex flex-col items-center justify-start min-h-[400px] bg-slate-50/30 rounded-2xl border border-slate-100 p-4">
+               <div className="flex-1 flex flex-col items-center justify-start min-h-[400px] bg-slate-50/30 rounded-2xl border border-slate-100 p-2 md:p-4 overflow-hidden relative">
                   <MermaidRenderer chart={result.mermaidCode} id="main-mermaid" />
                </div>
             </div>
           )}
 
           {activeTab === 'guide' && (
-            <div className="p-8 md:p-12 animate-in fade-in duration-300">
-              <div className="mb-8 pb-6 border-b border-white/10">
+            <div className="p-6 md:p-12 animate-in fade-in duration-300">
+              <div className="mb-6 md:mb-8 pb-6 border-b border-white/10">
                   <div className="flex items-center gap-4">
                       <div className="p-3 bg-brand-500/10 rounded-xl border border-brand-500/20">
-                        <Terminal className="w-8 h-8 text-brand-400" />
+                        <Terminal className="w-6 h-6 md:w-8 md:h-8 text-brand-400" />
                       </div>
                       <div>
-                        <h3 className="text-3xl font-bold text-white tracking-tight">Junior Dev Guide</h3>
-                        <p className="text-slate-400 mt-1">Technical deep-dives and critical alerts.</p>
+                        <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Junior Dev Guide</h3>
+                        <p className="text-slate-400 mt-1 text-sm md:text-base">Technical deep-dives and critical alerts.</p>
                       </div>
                   </div>
                </div>
@@ -506,7 +506,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
                     li: ({node, ...props}) => <li className="text-slate-300 mb-2 marker:text-brand-500" {...props} />,
                     strong: ({node, ...props}) => <strong className="text-white font-semibold" {...props} />,
                     blockquote: ({node, ...props}) => (
-                        <div className="bg-[#1e1b10] border-l-4 border-amber-500/80 p-6 my-8 rounded-r-xl shadow-lg relative overflow-hidden group">
+                        <div className="bg-[#1e1b10] border-l-4 border-amber-500/80 p-4 md:p-6 my-8 rounded-r-xl shadow-lg relative overflow-hidden group">
                              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                 <AlertTriangle className="w-24 h-24 text-amber-500" />
                              </div>
@@ -521,7 +521,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
                       const match = /language-(\w+)/.exec(className || '')
                       return !inline && match ? (
                         <div className="relative group my-8 rounded-2xl overflow-hidden shadow-2xl bg-[#0f172a] border border-slate-700/50">
-                           <div className="flex items-center justify-between bg-[#1e293b] px-5 py-3 border-b border-slate-700/50">
+                           <div className="flex items-center justify-between bg-[#1e293b] px-4 md:px-5 py-3 border-b border-slate-700/50">
                               <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest">{match[1]}</span>
                               <div className="flex gap-2 opacity-50">
                                 <div className="w-3 h-3 rounded-full bg-red-500"></div>
@@ -529,8 +529,8 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
                                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
                               </div>
                            </div>
-                           <pre className="!bg-[#0f172a] !p-6 !m-0 overflow-x-auto">
-                             <code className={`${className} font-mono text-sm leading-7 text-slate-200`} {...props}>
+                           <pre className="!bg-[#0f172a] !p-4 md:!p-6 !m-0 overflow-x-auto">
+                             <code className={`${className} font-mono text-xs md:text-sm leading-7 text-slate-200`} {...props}>
                                {children}
                              </code>
                            </pre>
@@ -556,16 +556,20 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
         SCIFI CHATBOT UI
         ----------------------
       */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4">
         
         {/* Chat Window */}
         <div 
             className={`
-                bg-slate-900 rounded-2xl shadow-2xl border-2 border-slate-700/50 w-96 max-w-[90vw] overflow-hidden transition-all duration-300 origin-bottom-right
-                backdrop-blur-xl
-                ${isChatOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-75 opacity-0 translate-y-12 pointer-events-none'}
+                bg-slate-900 shadow-2xl border-2 border-slate-700/50 overflow-hidden transition-all duration-300 origin-bottom-right backdrop-blur-xl
+                fixed z-50
+                md:rounded-2xl md:w-96 md:max-w-[90vw] md:bottom-20 md:right-8 md:max-h-[600px]
+                ${isChatOpen 
+                  ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto inset-0 md:inset-auto' 
+                  : 'opacity-0 scale-75 translate-y-12 pointer-events-none inset-0 md:inset-auto'
+                }
             `}
-            style={{ maxHeight: '600px', display: 'flex', flexDirection: 'column' }}
+            style={{ display: 'flex', flexDirection: 'column' }}
         >
             {/* Header: Sci-Fi HUD Style */}
             <div className="bg-slate-950 p-4 flex justify-between items-center text-cyan-400 border-b border-cyan-900/50 shrink-0 relative overflow-hidden">
@@ -587,8 +591,8 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
                     >
                         {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
                     </button>
-                    <button onClick={() => setIsChatOpen(false)} className="text-slate-500 hover:text-white transition-colors">
-                        <X className="w-5 h-5" />
+                    <button onClick={() => setIsChatOpen(false)} className="text-slate-500 hover:text-white transition-colors p-2 md:p-0">
+                        <X className="w-6 h-6 md:w-5 md:h-5" />
                     </button>
                 </div>
             </div>
@@ -620,7 +624,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
             </div>
 
             {/* Input Area */}
-            <div className="p-3 bg-slate-950 border-t border-cyan-900/30 shrink-0">
+            <div className="p-3 bg-slate-950 border-t border-cyan-900/30 shrink-0 pb-6 md:pb-3">
                 <form 
                     onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
                     className="flex gap-2"
@@ -631,7 +635,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
                             value={chatInput}
                             onChange={(e) => setChatInput(e.target.value)}
                             placeholder={isListening ? "Listening..." : "Input query..."}
-                            className="w-full bg-slate-900 border border-slate-700 text-cyan-100 rounded-lg pl-3 pr-10 py-2.5 text-xs font-mono outline-none focus:border-cyan-500/50 focus:shadow-[0_0_10px_rgba(6,182,212,0.1)] transition-all placeholder:text-slate-600"
+                            className="w-full bg-slate-900 border border-slate-700 text-cyan-100 rounded-lg pl-3 pr-10 py-3 md:py-2.5 text-base md:text-xs font-mono outline-none focus:border-cyan-500/50 focus:shadow-[0_0_10px_rgba(6,182,212,0.1)] transition-all placeholder:text-slate-600"
                             disabled={isChatLoading || isListening}
                         />
                         <button
@@ -645,7 +649,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
                     <button
                         type="submit"
                         disabled={isChatLoading || !chatInput.trim()}
-                        className="bg-cyan-700 text-white p-2.5 rounded-lg hover:bg-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-cyan-900/20"
+                        className="bg-cyan-700 text-white p-3 md:p-2.5 rounded-lg hover:bg-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-cyan-900/20"
                     >
                         <Send className="w-4 h-4" />
                     </button>
@@ -662,8 +666,8 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
         <button
             onClick={() => setIsChatOpen(!isChatOpen)}
             className={`
-                relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 hover:scale-110 active:scale-95 group
-                bg-slate-800 border-4 border-slate-700 shadow-2xl
+                relative w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 hover:scale-110 active:scale-95 group
+                bg-slate-800 border-4 border-slate-700 shadow-2xl z-40
                 ${!isChatOpen && 'animate-bounce-slow'}
             `}
             style={{ 
