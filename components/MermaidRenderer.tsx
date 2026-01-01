@@ -47,6 +47,45 @@ const MermaidRenderer: React.FC<MermaidRendererProps> = ({ chart, id = 'mermaid-
             return indent + nodes.replace(/,\s*/g, ' & ') + arrow;
         });
 
+        // FIX: Sanitize edge labels - replace problematic characters inside |...|
+        // This fixes errors like |1. Provides Code (Paste/Upload/GitHub)|
+        cleanChart = cleanChart.replace(/\|([^|]+)\|/g, (match, label) => {
+          // Replace problematic characters in edge labels
+          let sanitized = label
+            .replace(/\[/g, '')      // Remove [ completely
+            .replace(/\]/g, '')      // Remove ] completely  
+            .replace(/\(/g, '')      // Remove ( completely
+            .replace(/\)/g, '')      // Remove ) completely
+            .replace(/\//g, ', ')    // Replace / with ', '
+            .replace(/"/g, "'")      // Replace " with '
+            .replace(/</g, '')       // Remove <
+            .replace(/>/g, '')       // Remove >
+            .replace(/#/g, '')       // Remove #
+            .replace(/&/g, 'and')    // Replace & with 'and'
+            .replace(/\s+/g, ' ')    // Normalize whitespace
+            .trim();
+          return `|${sanitized}|`;
+        });
+
+        // FIX: Sanitize node labels in brackets - ["label"] or ("label") etc.
+        cleanChart = cleanChart.replace(/(\["|"\]|\("|\"\))/g, (match) => {
+          return match; // Keep these as-is, they're valid
+        });
+        
+        // FIX: Ensure node labels with special chars are properly quoted
+        // Match node definitions like NodeName["Label with special chars"]
+        cleanChart = cleanChart.replace(/(\w+)\["([^"]+)"\]/g, (match, nodeId, label) => {
+          // Sanitize the label content - remove brackets and parens
+          let sanitized = label
+            .replace(/\[/g, '')
+            .replace(/\]/g, '')
+            .replace(/\(/g, '')
+            .replace(/\)/g, '')
+            .replace(/</g, '')
+            .replace(/>/g, '');
+          return `${nodeId}["${sanitized}"]`;
+        });
+
         cleanChart = cleanChart.trim();
 
         const typeMatch = cleanChart.match(/^(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|mindmap|timeline)/m);

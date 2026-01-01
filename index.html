@@ -54,6 +54,49 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
   }
+  
+  /* Hide scrollbar for mobile tabs */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  /* Touch-friendly scrolling for diagrams */
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
+  
+  /* Slow bounce animation for chat button */
+  @keyframes bounce-slow {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  .animate-bounce-slow {
+    animation: bounce-slow 3s ease-in-out infinite;
+  }
+  
+  /* Slow spin for chat decorations */
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
+  }
 </style>
 </head>
   <body class="bg-slate-50 text-slate-900 antialiased selection:bg-brand-200 selection:text-brand-900">

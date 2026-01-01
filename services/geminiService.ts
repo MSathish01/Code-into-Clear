@@ -23,9 +23,9 @@ const analysisSchema: Schema = {
 };
 
 export const analyzeCode = async (codeContext: string): Promise<AnalysisResult> => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("API Key is missing. Please ensure process.env.API_KEY is set.");
+    throw new Error("API Key is missing. Please contact the administrator.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -47,7 +47,13 @@ export const analyzeCode = async (codeContext: string): Promise<AnalysisResult> 
            - CORRECT: \`A["User Login"] --> B["Database"]\`
            - INCORRECT: \`A(User Login) --> B(Database)\`
          - **Avoid special characters** inside node IDs (the text before the bracket). Keep IDs alphanumeric (e.g., \`Node1\`, \`AuthService\`).
-         - **Do NOT** use brackets () [] {} inside the label string unless escaped.
+         - **NEVER use parentheses () or forward slashes / inside edge labels or node labels.** These cause parse errors.
+           - WRONG: \`A -->|Fetch (API/REST)| B\`
+           - CORRECT: \`A -->|Fetch via API| B\`
+         - **In edge labels (text between |...|), use only simple alphanumeric text, dots, and spaces.**
+           - WRONG: \`-->|1. Get Data (from DB/Cache)|\`
+           - CORRECT: \`-->|1. Get Data from DB or Cache|\`
+         - **Do NOT** use brackets () [] {} inside the label string.
          - **Do NOT** wrap the output in \`\`\`mermaid\`\`\` markdown blocks. Return ONLY the code.
          - **Do NOT** use comments (starting with %%) in the mermaid code. They cause parsing errors.
          - **Do NOT** use comma-separated lists for nodes (e.g. \`A, B, C --> D\`). THIS IS INVALID. 

@@ -82,7 +82,7 @@ const App: React.FC = () => {
       if (err.message && err.message.includes('token count')) {
           setErrorMsg("The code is too large for the AI to process. Please try analyzing fewer files or a specific module.");
       } else {
-          setErrorMsg(err.message || "An unexpected error occurred while contacting Gemini.");
+              setErrorMsg(err.message || "An unexpected error occurred. Please try again.");
       }
     }
   };
@@ -108,7 +108,7 @@ const App: React.FC = () => {
               <h1 className="font-bold text-xl text-slate-800 tracking-tight">Code<span className="text-brand-600">Doc</span></h1>
             </div>
             <div className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200 hidden sm:block">
-                Powered by Gemini 2.5
+                AI-Powered Analysis
             </div>
           </div>
         </header>
@@ -141,14 +141,14 @@ const App: React.FC = () => {
       <main className="relative z-10 flex-1 max-w-5xl mx-auto w-full p-4 md:p-6 flex flex-col justify-start pt-6 md:pt-16">
         
         <div className="text-center mb-8 md:mb-12 space-y-4 md:space-y-6 animate-in slide-in-from-bottom-5 fade-in duration-700">
-          <h2 className="text-3xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.2] md:leading-[1.1]">
-            Turn Legacy Code into <br/>
+          <h2 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.2] md:leading-[1.1] px-2">
+            Turn Legacy Code into <br className="hidden sm:block"/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-teal-500 to-emerald-500">
               Clear Documentation
             </span>
           </h2>
-          <p className="text-base md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed px-2">
-            Instantly generate architecture diagrams, plain English summaries, and junior developer guides powered by <span className="font-semibold text-brand-700 whitespace-nowrap">Gemini 2.5 Pro</span>.
+          <p className="text-base md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed px-4">
+            Instantly generate architecture diagrams, plain English summaries, and junior developer guides with <span className="font-semibold text-brand-700 whitespace-nowrap">AI-powered analysis</span>.
           </p>
         </div>
 
@@ -288,35 +288,35 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-center pb-12">
-          <div className="group p-6 rounded-3xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-300">
-            <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <div className="mt-8 md:mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 text-center pb-8 md:pb-12 px-2">
+          <div className="group p-4 md:p-6 rounded-2xl md:rounded-3xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-300">
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-brand-50 text-brand-600 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-5 group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
-            <h3 className="font-bold text-lg text-slate-900 mb-2">Plain English</h3>
-            <p className="text-slate-500 leading-relaxed">Complex spaghetti code translated into simple, human-readable logic summaries.</p>
+            <h3 className="font-bold text-base md:text-lg text-slate-900 mb-1.5 md:mb-2">Plain English</h3>
+            <p className="text-slate-500 text-sm md:text-base leading-relaxed">Complex spaghetti code translated into simple, human-readable logic summaries.</p>
           </div>
-          <div className="group p-6 rounded-3xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-300">
-            <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform duration-300">
-               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
+          <div className="group p-4 md:p-6 rounded-2xl md:rounded-3xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-300">
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-emerald-50 text-emerald-600 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-5 group-hover:scale-110 transition-transform duration-300">
+               <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
             </div>
-            <h3 className="font-bold text-lg text-slate-900 mb-2">Visual Flows</h3>
-            <p className="text-slate-500 leading-relaxed">Architecture and data flow visualized instantly with auto-generated Mermaid diagrams.</p>
+            <h3 className="font-bold text-base md:text-lg text-slate-900 mb-1.5 md:mb-2">Visual Flows</h3>
+            <p className="text-slate-500 text-sm md:text-base leading-relaxed">Architecture and data flow visualized instantly with auto-generated diagrams.</p>
           </div>
-          <div className="group p-6 rounded-3xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-300">
-            <div className="w-14 h-14 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform duration-300">
-               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+          <div className="group p-4 md:p-6 rounded-2xl md:rounded-3xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-100/50 transition-all duration-300 sm:col-span-2 md:col-span-1">
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-teal-50 text-teal-600 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-5 group-hover:scale-110 transition-transform duration-300">
+               <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
             </div>
-            <h3 className="font-bold text-lg text-slate-900 mb-2">Junior Guides</h3>
-            <p className="text-slate-500 leading-relaxed">Detailed docstrings, "gotchas", and educational notes for easy onboarding.</p>
+            <h3 className="font-bold text-base md:text-lg text-slate-900 mb-1.5 md:mb-2">Junior Guides</h3>
+            <p className="text-slate-500 text-sm md:text-base leading-relaxed">Detailed docstrings, "gotchas", and educational notes for easy onboarding.</p>
           </div>
         </div>
       </main>
       
       {/* Footer */}
-      <footer className="bg-white/50 border-t border-slate-200 py-8 mt-auto">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-            <p className="text-slate-400 text-sm">Powered by Google Gemini 2.5 Flash & Mermaid.js</p>
+      <footer className="bg-white/50 border-t border-slate-200 py-6 md:py-8 mt-auto">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 text-center">
+            <p className="text-slate-400 text-xs md:text-sm">CodeDoc &copy; {new Date().getFullYear()} &middot; AI-Powered Documentation</p>
         </div>
       </footer>
     </div>
