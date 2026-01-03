@@ -806,7 +806,12 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
                   </div>
                 )}
                 <form 
-                    onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+                    onSubmit={(e) => { 
+                        e.preventDefault(); 
+                        if (chatInput.trim() && chatSession && !isChatLoading) {
+                            handleSendMessage(); 
+                        }
+                    }}
                     className="flex gap-2"
                 >
                     <div className="flex-1 relative group">
@@ -814,9 +819,15 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
                             type="text"
                             value={chatInput}
                             onChange={(e) => setChatInput(e.target.value)}
-                            placeholder={isListening ? "Listening..." : "Input query..."}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey && chatInput.trim() && chatSession && !isChatLoading) {
+                                    e.preventDefault();
+                                    handleSendMessage();
+                                }
+                            }}
+                            placeholder={!chatSession ? "Initializing..." : isListening ? "Listening..." : "Input query..."}
                             className="w-full bg-slate-900 border border-slate-700 text-cyan-100 rounded-lg pl-3 pr-10 py-3 md:py-2.5 text-base md:text-xs font-mono outline-none focus:border-cyan-500/50 focus:shadow-[0_0_10px_rgba(6,182,212,0.1)] transition-all placeholder:text-slate-600"
-                            disabled={isChatLoading || isListening}
+                            disabled={isChatLoading || isListening || !chatSession}
                         />
                         <button
                             type="button"
@@ -828,10 +839,20 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
                     </div>
                     <button
                         type="submit"
-                        disabled={isChatLoading || !chatInput.trim()}
+                        disabled={isChatLoading || !chatInput.trim() || !chatSession}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            if (chatInput.trim() && chatSession && !isChatLoading) {
+                                handleSendMessage();
+                            }
+                        }}
                         className="bg-cyan-700 text-white p-3 md:p-2.5 rounded-lg hover:bg-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-cyan-900/20"
                     >
-                        <Send className="w-4 h-4" />
+                        {isChatLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <Send className="w-4 h-4" />
+                        )}
                     </button>
                 </form>
             </div>
