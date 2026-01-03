@@ -830,7 +830,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
                             }}
                             placeholder={!chatSession ? "Initializing..." : isListening ? "Listening..." : "Input query..."}
                             className="w-full bg-slate-900 border border-slate-700 text-cyan-100 rounded-lg pl-3 pr-10 py-3 md:py-2.5 text-base md:text-xs font-mono outline-none focus:border-cyan-500/50 focus:shadow-[0_0_10px_rgba(6,182,212,0.1)] transition-all placeholder:text-slate-600"
-                            disabled={isChatLoading || isListening || !chatSession}
+                            disabled={isChatLoading || isListening}
                         />
                         <button
                             type="button"

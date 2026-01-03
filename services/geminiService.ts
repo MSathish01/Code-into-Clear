@@ -2,6 +2,20 @@
 import { GoogleGenAI, Schema, Type, Chat } from "@google/genai";
 import { AnalysisResult } from "../types";
 
+const getGeminiApiKey = (): string | undefined => {
+  const viteKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+  if (viteKey && viteKey.trim()) return viteKey.trim();
+
+  // Back-compat for older builds that injected keys via define()
+  const procKey = (process as any)?.env?.API_KEY as string | undefined;
+  if (procKey && procKey.trim()) return procKey.trim();
+
+  const procGeminiKey = (process as any)?.env?.GEMINI_API_KEY as string | undefined;
+  if (procGeminiKey && procGeminiKey.trim()) return procGeminiKey.trim();
+
+  return undefined;
+};
+
 // Define the expected schema for the JSON response
 const analysisSchema: Schema = {
   type: Type.OBJECT,
@@ -23,7 +37,7 @@ const analysisSchema: Schema = {
 };
 
 export const analyzeCode = async (codeContext: string): Promise<AnalysisResult> => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = getGeminiApiKey();
   if (!apiKey) {
     throw new Error("API Key is missing. Please contact the administrator.");
   }
@@ -111,7 +125,7 @@ export const analyzeCode = async (codeContext: string): Promise<AnalysisResult> 
  * Optimized for faster response times with smart context compression.
  */
 export const createChatSession = async (codeContext: string): Promise<Chat> => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = getGeminiApiKey();
   if (!apiKey) throw new Error("API Key is missing.");
 
   const ai = new GoogleGenAI({ apiKey });
@@ -160,7 +174,7 @@ RULES:
  * @param prompt User prompt to guide generation (e.g., "Add a retro filter")
  */
 export const generateInfographic = async (imageBase64: string, prompt: string): Promise<string> => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = getGeminiApiKey();
   if (!apiKey) throw new Error("API Key is missing.");
 
   const ai = new GoogleGenAI({ apiKey });
