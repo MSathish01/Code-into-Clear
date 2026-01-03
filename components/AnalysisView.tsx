@@ -42,12 +42,15 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
   // Initialize Chat Session
   useEffect(() => {
     if (code) {
-        try {
-            const session = createChatSession(code);
-            setChatSession(session);
-        } catch (e) {
-            console.error("Failed to init chat", e);
-        }
+        const initChat = async () => {
+            try {
+                const session = await createChatSession(code);
+                setChatSession(session);
+            } catch (e) {
+                console.error("Failed to init chat", e);
+            }
+        };
+        initChat();
     }
   }, [code]);
 

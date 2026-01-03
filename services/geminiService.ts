@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Schema, Type } from "@google/genai";
+import { GoogleGenAI, Schema, Type, Chat } from "@google/genai";
 import { AnalysisResult } from "../types";
 
 // Define the expected schema for the JSON response
@@ -110,7 +110,7 @@ export const analyzeCode = async (codeContext: string): Promise<AnalysisResult> 
  * Creates a chat session context-aware of the code.
  * Optimized for faster response times with smart context compression.
  */
-export const createChatSession = (codeContext: string) => {
+export const createChatSession = async (codeContext: string): Promise<Chat> => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) throw new Error("API Key is missing.");
 
@@ -132,7 +132,7 @@ export const createChatSession = (codeContext: string) => {
     }
   }
 
-  return ai.chats.create({
+  const chat = await ai.chats.create({
     model: 'gemini-2.5-flash',
     config: {
         systemInstruction: `You are CodeDoc Assistant, a fast and precise developer assistant.
@@ -150,6 +150,8 @@ RULES:
         maxOutputTokens: 1024, // Limit response length for speed
     }
   });
+  
+  return chat;
 };
 
 /**
