@@ -125,6 +125,64 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
   const streamBufferRef = useRef<string>('');
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Quick reply handler - sends message directly without relying on input state
+  const handleQuickReply = async (message: string) => {
+    if (!message.trim() || !chatSession || isChatLoading) return;
+    
+    setChatInput('');
+    setChatMessages(prev => [...prev, { role: 'user', text: message }, { role: 'model', text: '' }]);
+    setIsChatLoading(true);
+    streamBufferRef.current = '';
+
+    try {
+        const result = await chatSession.sendMessageStream({ message: message });
+        
+        const flushBuffer = () => {
+            if (streamBufferRef.current) {
+                const currentText = streamBufferRef.current;
+                setChatMessages(prev => {
+                    const newArr = [...prev];
+                    newArr[newArr.length - 1] = { role: 'model', text: currentText };
+                    return newArr;
+                });
+            }
+        };
+
+        for await (const chunk of result) {
+            const c = chunk as GenerateContentResponse;
+            const text = c.text;
+            if (text) {
+                streamBufferRef.current += text;
+                if (!updateTimeoutRef.current) {
+                    updateTimeoutRef.current = setTimeout(() => {
+                        flushBuffer();
+                        updateTimeoutRef.current = null;
+                    }, 50);
+                }
+            }
+        }
+        
+        if (updateTimeoutRef.current) {
+            clearTimeout(updateTimeoutRef.current);
+            updateTimeoutRef.current = null;
+        }
+        flushBuffer();
+        
+        if (voiceEnabled) {
+            speakText(streamBufferRef.current);
+        }
+    } catch (error) {
+        console.error("Chat error", error);
+        setChatMessages(prev => {
+            const newArr = [...prev];
+            newArr[newArr.length - 1] = { role: 'model', text: "Connection error. Please try again." };
+            return newArr;
+        });
+    } finally {
+        setIsChatLoading(false);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!chatInput.trim() || !chatSession) return;
     
@@ -729,7 +787,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
             {/* Input Area */}
             <div className="p-3 bg-slate-950 border-t border-cyan-900/30 shrink-0 pb-6 md:pb-3">
                 {/* Quick Reply Suggestions - Show only when no messages sent yet or chat is empty */}
-                {chatMessages.length <= 1 && !isChatLoading && (
+                {chatMessages.length <= 1 && !isChatLoading && chatSession && (
                   <div className="mb-3 flex flex-wrap gap-2">
                     {[
                       "What does this code do?",
@@ -739,14 +797,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
                     ].map((suggestion, idx) => (
                       <button
                         key={idx}
-                        onClick={() => {
-                          setChatInput(suggestion);
-                          // Auto-send after a brief delay
-                          setTimeout(() => {
-                            const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
-                            handleSendMessage();
-                          }, 100);
-                        }}
+                        onClick={() => handleQuickReply(suggestion)}
                         className="text-[10px] md:text-xs px-2 py-1 bg-cyan-950/50 text-cyan-400 border border-cyan-800/50 rounded-full hover:bg-cyan-900/50 hover:border-cyan-600/50 transition-all font-mono"
                       >
                         {suggestion}

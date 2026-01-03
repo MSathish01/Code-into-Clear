@@ -43,26 +43,30 @@ export const analyzeCode = async (codeContext: string): Promise<AnalysisResult> 
     2. Visual Architecture: Generate a high-quality Mermaid.js diagram.
        * **Strategy:** Analyze the code structure (OO vs Functional vs Modular) to pick the best diagram type.
        * **CRITICAL SYNTAX RULES (To prevent rendering errors):**
-         - **ALWAYS enclose node labels in double quotes/strings.** 
+         - **ALWAYS enclose node labels in square brackets with double quotes inside.** 
            - CORRECT: \`A["User Login"] --> B["Database"]\`
            - INCORRECT: \`A(User Login) --> B(Database)\`
-         - **Avoid special characters** inside node IDs (the text before the bracket). Keep IDs alphanumeric (e.g., \`Node1\`, \`AuthService\`).
-         - **NEVER use parentheses () or forward slashes / inside edge labels or node labels.** These cause parse errors.
-           - WRONG: \`A -->|Fetch (API/REST)| B\`
-           - CORRECT: \`A -->|Fetch via API| B\`
-         - **In edge labels (text between |...|), use only simple alphanumeric text, dots, and spaces.**
-           - WRONG: \`-->|1. Get Data (from DB/Cache)|\`
-           - CORRECT: \`-->|1. Get Data from DB or Cache|\`
-         - **Do NOT** use brackets () [] {} inside the label string.
-         - **Do NOT** wrap the output in \`\`\`mermaid\`\`\` markdown blocks. Return ONLY the code.
-         - **Do NOT** use comments (starting with %%) in the mermaid code. They cause parsing errors.
-         - **Do NOT** use comma-separated lists for nodes (e.g. \`A, B, C --> D\`). THIS IS INVALID. 
-           - **CORRECT:** \`A & B & C --> D\` or write separate lines.
-         - **PREFER Top-Down (TD) orientation** for graphs to fit standard documents better.
+         - **Node IDs must be simple alphanumeric** (e.g., \`Node1\`, \`AuthService\`, \`stepA\`). NO special chars in IDs.
+         - **NEVER use these special shapes - they cause errors:**
+           - WRONG: \`A[/"text"/]\` or \`B[("text")]\` or \`C{{"text"}}\`
+           - CORRECT: \`A["text"]\` - use simple square brackets only
+         - **NEVER use parentheses () inside ANY text** - not in labels, not in subgraph names.
+           - WRONG: \`subgraph Data Generation (Optional)\`
+           - CORRECT: \`subgraph DataGeneration\` or \`subgraph Data_Generation_Optional\`
+         - **Subgraph names must be simple** - alphanumeric with underscores only, NO spaces or special chars.
+           - WRONG: \`subgraph Input Data Sources\`
+           - CORRECT: \`subgraph InputDataSources\`
+         - **Do NOT chain too many nodes with &** - max 3 nodes per & chain.
+           - WRONG: \`A & B & C & D & E --> F\`
+           - CORRECT: Split into multiple lines
+         - **Do NOT** wrap output in \`\`\`mermaid\`\`\` markdown blocks. Return ONLY raw mermaid code.
+         - **Do NOT** use %% comments.
+         - **PREFER simpler diagrams** - max 15-20 nodes for readability.
+         - **PREFER Top-Down (TD) orientation.**
        * **Diagram Types:**
-         - \`graph TD\` (Flowchart): Best for general logic and file dependencies. Use \`subgraph\` to group files.
-         - \`classDiagram\`: Best for TypeScript interfaces/classes or Python classes.
-         - \`sequenceDiagram\`: Best for complex specific functions with many API calls.
+         - \`graph TD\` (Flowchart): Best for general logic. Use \`subgraph\` to group.
+         - \`classDiagram\`: Best for TypeScript/Python classes.
+         - \`sequenceDiagram\`: Best for API call flows.
     
     3. Junior Dev Guide: 
        - Rewrite 2 complex functions with detailed JSDoc/Docstrings.
