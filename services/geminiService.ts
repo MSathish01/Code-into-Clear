@@ -104,6 +104,7 @@ export const analyzeCode = async (codeContext: string): Promise<AnalysisResult> 
 
 /**
  * Creates a chat session context-aware of the code.
+ * Optimized for faster response times with smart context compression.
  */
 export const createChatSession = (codeContext: string) => {
   const apiKey = process.env.API_KEY;
@@ -111,27 +112,38 @@ export const createChatSession = (codeContext: string) => {
 
   const ai = new GoogleGenAI({ apiKey });
   
-  // Truncate if extremely large to ensure some buffer for conversation, 
-  // though Flash has a huge context window (1M tokens), so this is just a safety.
-  const context = codeContext.length > 500000 ? codeContext.substring(0, 500000) + "\n...(truncated)..." : codeContext;
+  // Smart context compression for better performance
+  // Prioritize keeping structure over raw code for large contexts
+  let context = codeContext;
+  if (codeContext.length > 100000) {
+    // For very large codebases, compress by removing excessive whitespace and comments
+    context = codeContext
+      .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
+      .replace(/\/\/.*$/gm, '') // Remove line comments
+      .replace(/^\s*[\r\n]/gm, '') // Remove empty lines
+      .replace(/[ \t]+/g, ' ') // Collapse whitespace
+      .substring(0, 200000);
+    if (codeContext.length > 200000) {
+      context += "\n...(truncated for performance)...";
+    }
+  }
 
   return ai.chats.create({
     model: 'gemini-2.5-flash',
     config: {
-        systemInstruction: `You are an expert developer assistant named "CodeDoc Assistant".
-        You have analyzed the following codebase:
-        
-        --- BEGIN CODE CONTEXT ---
-        ${context}
-        --- END CODE CONTEXT ---
+        systemInstruction: `You are CodeDoc Assistant, a fast and precise developer assistant.
 
-        Your Goal: Answer user questions about this specific code.
-        Guidelines:
-        - Be specific. Cite function names, variable names, and file names from the context.
-        - If asked "What is the purpose of this project?", summarize the high-level goal based on the code.
-        - If the user asks for a fix, provide a code snippet.
-        - Keep answers concise but technical.
-        `,
+CODE CONTEXT:
+${context}
+
+RULES:
+1. Be concise - answer in 2-4 sentences when possible
+2. Cite specific function/variable names from the code
+3. For code fixes, provide minimal working snippets
+4. Skip unnecessary pleasantries - get straight to the answer
+5. Use bullet points for multi-part answers`,
+        temperature: 0.3, // Lower temperature for faster, more focused responses
+        maxOutputTokens: 1024, // Limit response length for speed
     }
   });
 };

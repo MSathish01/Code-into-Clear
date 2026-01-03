@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { UploadCloud, Code, Loader2, Sparkles, FileText, Github, Search, ArrowRight, Check, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { UploadCloud, Code, Loader2, Sparkles, FileText, Github, Search, ArrowRight, Check, AlertTriangle, Key, Eye, EyeOff } from 'lucide-react';
 import { analyzeCode } from './services/geminiService';
 import { fetchGithubCode } from './services/githubService';
 import { AnalysisResult, AnalysisStatus } from './types';
@@ -16,6 +16,27 @@ const App: React.FC = () => {
   const [inputMethod, setInputMethod] = useState<InputMethod>('paste');
   const [githubUrl, setGithubUrl] = useState('');
   const [isLoadingGithub, setIsLoadingGithub] = useState(false);
+  const [githubToken, setGithubToken] = useState('');
+  const [showToken, setShowToken] = useState(false);
+  const [showTokenInput, setShowTokenInput] = useState(false);
+
+  // Load saved GitHub token from localStorage on mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem('github_pat');
+    if (savedToken) {
+      setGithubToken(savedToken);
+    }
+  }, []);
+
+  // Save token to localStorage when it changes
+  const handleTokenChange = (token: string) => {
+    setGithubToken(token);
+    if (token.trim()) {
+      localStorage.setItem('github_pat', token.trim());
+    } else {
+      localStorage.removeItem('github_pat');
+    }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -45,7 +66,7 @@ const App: React.FC = () => {
       setResult(null); // Clear previous results
       setStatus(AnalysisStatus.IDLE);
       
-      const fetchedCode = await fetchGithubCode(githubUrl);
+      const fetchedCode = await fetchGithubCode(githubUrl, githubToken || undefined);
       setCode(fetchedCode);
     } catch (err: any) {
       console.error(err);
@@ -205,9 +226,69 @@ const App: React.FC = () => {
                      Fetch
                    </button>
                  </div>
+                 
+                 {/* Private Repo Token Section */}
+                 <div className="pt-2 border-t border-slate-200/60 mt-3">
+                   <button
+                     onClick={() => setShowTokenInput(!showTokenInput)}
+                     className="text-xs font-medium text-slate-500 hover:text-brand-600 flex items-center gap-1.5 transition-colors"
+                   >
+                     <Key className="w-3 h-3" />
+                     {showTokenInput ? 'Hide' : 'Access Private Repos?'}
+                     {githubToken && !showTokenInput && <span className="text-brand-500 ml-1">✓ Token saved</span>}
+                   </button>
+                   
+                   {showTokenInput && (
+                     <div className="mt-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                       <label className="text-xs font-medium text-slate-600 block">
+                         GitHub Personal Access Token (PAT)
+                       </label>
+                       <div className="relative">
+                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                           <Key className="h-4 w-4 text-slate-400" />
+                         </div>
+                         <input 
+                           type={showToken ? "text" : "password"}
+                           value={githubToken}
+                           onChange={(e) => handleTokenChange(e.target.value)}
+                           placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                           className="w-full pl-9 pr-10 bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all font-mono"
+                         />
+                         <button
+                           type="button"
+                           onClick={() => setShowToken(!showToken)}
+                           className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                         >
+                           {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                         </button>
+                       </div>
+                       <p className="text-[10px] text-slate-400 leading-relaxed">
+                         Token is stored locally in your browser. Generate one at{' '}
+                         <a 
+                           href="https://github.com/settings/tokens" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           className="text-brand-600 hover:underline"
+                         >
+                           GitHub Settings → Tokens
+                         </a>
+                         {' '}with "repo" scope.
+                       </p>
+                       {githubToken && (
+                         <button
+                           onClick={() => handleTokenChange('')}
+                           className="text-xs text-red-500 hover:text-red-700 font-medium"
+                         >
+                           Clear saved token
+                         </button>
+                       )}
+                     </div>
+                   )}
+                 </div>
+                 
                  <p className="text-xs text-slate-500 ml-1 flex items-center gap-1">
                     <Check className="w-3 h-3 text-brand-500" />
-                    Supports public repos. Large repos auto-filtered.
+                    Supports {githubToken ? 'public & private' : 'public'} repos. Large repos auto-filtered.
                  </p>
                </div>
             )}

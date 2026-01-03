@@ -1,6 +1,17 @@
 
-export const fetchGithubCode = async (url: string): Promise<string> => {
+export const fetchGithubCode = async (url: string, token?: string): Promise<string> => {
   if (!url) throw new Error("URL is required");
+
+  // Helper to create headers with optional auth
+  const createHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = {
+      'Accept': 'application/vnd.github.v3+json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  };
 
   // Helper: Basic file extension check to filter out non-code assets
   const isCodeFile = (path: string) => {
@@ -27,6 +38,8 @@ export const fetchGithubCode = async (url: string): Promise<string> => {
   };
 
   try {
+    const headers = createHeaders();
+    
     // 1. Handle Single File (Blob) or Gist
     if (url.includes('/blob/') || url.includes('gist.github.com')) {
       let rawUrl = url;
@@ -36,8 +49,13 @@ export const fetchGithubCode = async (url: string): Promise<string> => {
         rawUrl = url.replace('gist.github.com', 'gist.githubusercontent.com') + '/raw';
       }
       
-      const response = await fetch(rawUrl);
-      if (!response.ok) throw new Error(`Failed to fetch file: ${response.statusText}. Check if the URL is correct and public.`);
+      const response = await fetch(rawUrl, { headers: token ? { 'Authorization': `Bearer ${token}` } : undefined });
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error(`File not found. ${token ? 'Check if the URL is correct.' : 'It might be private - add a GitHub token to access.'}`);
+        }
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
       return await response.text();
     }
 
@@ -50,15 +68,13 @@ export const fetchGithubCode = async (url: string): Promise<string> => {
     const owner = parts[0];
     const repo = parts[1];
     
-    const headers = {
-        'Accept': 'application/vnd.github.v3+json',
-    };
-    
     // Step A: Get Repo Info
     const repoInfoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
     
-    if (repoInfoRes.status === 403) throw new Error("GitHub API rate limit exceeded. Please try again later or use a 'raw' file URL directly.");
-    if (repoInfoRes.status === 404) throw new Error("Repository not found. It might be private or the URL is incorrect.");
+    if (repoInfoRes.status === 403) throw new Error("GitHub API rate limit exceeded. Please try again later or add a GitHub token for higher limits.");
+    if (repoInfoRes.status === 404) {
+      throw new Error(`Repository not found. ${token ? 'Check if the URL is correct and you have access.' : 'It might be private - add a GitHub token to access.'}`);
+    }
     if (!repoInfoRes.ok) throw new Error(`GitHub API Error: ${repoInfoRes.statusText}`);
     
     const repoInfo = await repoInfoRes.json();
@@ -97,31 +113,56 @@ export const fetchGithubCode = async (url: string): Promise<string> => {
     let fetchedFileCount = 0;
     const fileContents: string[] = [];
 
+    // For private repos, we need to use the API instead of raw.githubusercontent.com
+    const fetchFileContent = async (filePath: string): Promise<string | null> => {
+      if (token) {
+        // Use GitHub API for private repos (returns base64 encoded content)
+        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`;
+        try {
+          const res = await fetch(apiUrl, { headers });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.content && data.encoding === 'base64') {
+              return atob(data.content.replace(/\n/g, ''));
+            }
+          }
+        } catch (e) {
+          console.warn(`API fetch failed for ${filePath}`, e);
+        }
+        return null;
+      } else {
+        // Use raw.githubusercontent.com for public repos (faster)
+        const rawFileUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`;
+        try {
+          const res = await fetch(rawFileUrl);
+          if (res.ok) {
+            return await res.text();
+          }
+        } catch (e) {
+          console.warn(`Raw fetch failed for ${filePath}`, e);
+        }
+        return null;
+      }
+    };
+
     // Take top N files, but stop if size limit is reached
     for (const file of sortedFiles) {
       if (fetchedFileCount >= MAX_FILES) break;
       if (currentTotalChars >= MAX_TOTAL_CHARS) break;
 
-      const rawFileUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file.path}`;
-      try {
-        const res = await fetch(rawFileUrl);
-        if (res.ok) {
-          const text = await res.text();
-          
-          // Double check size after fetch (in case API size was missing)
-          if (text.length > MAX_SINGLE_FILE_SIZE) continue;
+      const text = await fetchFileContent(file.path);
+      if (text) {
+        // Double check size after fetch (in case API size was missing)
+        if (text.length > MAX_SINGLE_FILE_SIZE) continue;
 
-          fileContents.push(`\n\n--- START OF FILE: ${file.path} ---\n${text}\n--- END OF FILE: ${file.path} ---\n`);
-          
-          currentTotalChars += text.length;
-          fetchedFileCount++;
-        }
-      } catch (e) {
-        console.warn(`Failed to fetch ${file.path}`, e);
+        fileContents.push(`\n\n--- START OF FILE: ${file.path} ---\n${text}\n--- END OF FILE: ${file.path} ---\n`);
+        
+        currentTotalChars += text.length;
+        fetchedFileCount++;
       }
     }
 
-    const result = `// Repository: ${owner}/${repo}\n// Analyzed Files: ${fetchedFileCount}\n// Truncated: ${currentTotalChars >= MAX_TOTAL_CHARS ? 'Yes (Size Limit)' : 'No'}\n` + fileContents.join('');
+    const result = `// Repository: ${owner}/${repo}${repoInfo.private ? ' (Private)' : ''}\n// Analyzed Files: ${fetchedFileCount}\n// Truncated: ${currentTotalChars >= MAX_TOTAL_CHARS ? 'Yes (Size Limit)' : 'No'}\n` + fileContents.join('');
     
     if (result.length < 50) {
         throw new Error("Failed to retrieve any file content from this repository.");

@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { AnalysisResult } from '../types';
 import MermaidRenderer from './MermaidRenderer';
@@ -72,10 +72,24 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
     }
   }, []);
 
-  // Scroll chat to bottom
+  // Scroll chat to bottom with optimized smooth scroll
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatEndRef.current) {
+      // Use requestAnimationFrame for smoother scrolling
+      requestAnimationFrame(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      });
+    }
   }, [chatMessages, isChatOpen]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const toggleMic = () => {
     if (!recognitionRef.current) {
@@ -107,41 +121,71 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
     window.speechSynthesis.speak(utterance);
   };
 
+  // Ref to track streaming response for batched updates
+  const streamBufferRef = useRef<string>('');
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleSendMessage = async () => {
     if (!chatInput.trim() || !chatSession) return;
     
     const userMsg = chatInput;
     setChatInput('');
-    setChatMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    
+    // Batch the initial state updates
+    setChatMessages(prev => [...prev, { role: 'user', text: userMsg }, { role: 'model', text: '' }]);
     setIsChatLoading(true);
+    streamBufferRef.current = '';
 
     try {
         const result = await chatSession.sendMessageStream({ message: userMsg });
         
-        let fullResponse = "";
-        setChatMessages(prev => [...prev, { role: 'model', text: "" }]); // Add placeholder
+        // Batched UI updates - update every 50ms instead of every chunk
+        const flushBuffer = () => {
+            if (streamBufferRef.current) {
+                const currentText = streamBufferRef.current;
+                setChatMessages(prev => {
+                    const newArr = [...prev];
+                    newArr[newArr.length - 1] = { role: 'model', text: currentText };
+                    return newArr;
+                });
+            }
+        };
 
         for await (const chunk of result) {
             const c = chunk as GenerateContentResponse;
             const text = c.text;
             if (text) {
-                fullResponse += text;
-                setChatMessages(prev => {
-                    const newArr = [...prev];
-                    newArr[newArr.length - 1].text = fullResponse;
-                    return newArr;
-                });
+                streamBufferRef.current += text;
+                
+                // Debounce UI updates for better performance
+                if (!updateTimeoutRef.current) {
+                    updateTimeoutRef.current = setTimeout(() => {
+                        flushBuffer();
+                        updateTimeoutRef.current = null;
+                    }, 50);
+                }
             }
         }
         
+        // Final flush to ensure all content is displayed
+        if (updateTimeoutRef.current) {
+            clearTimeout(updateTimeoutRef.current);
+            updateTimeoutRef.current = null;
+        }
+        flushBuffer();
+        
         // Speak the full response once stream is done
         if (voiceEnabled) {
-            speakText(fullResponse);
+            speakText(streamBufferRef.current);
         }
 
     } catch (error) {
         console.error("Chat error", error);
-        setChatMessages(prev => [...prev, { role: 'model', text: "Error in analytical sub-routine. Please retry query." }]);
+        setChatMessages(prev => {
+            const newArr = [...prev];
+            newArr[newArr.length - 1] = { role: 'model', text: "Connection error. Please try again." };
+            return newArr;
+        });
     } finally {
         setIsChatLoading(false);
     }
@@ -684,6 +728,32 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ result, code, onReset }) =>
 
             {/* Input Area */}
             <div className="p-3 bg-slate-950 border-t border-cyan-900/30 shrink-0 pb-6 md:pb-3">
+                {/* Quick Reply Suggestions - Show only when no messages sent yet or chat is empty */}
+                {chatMessages.length <= 1 && !isChatLoading && (
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    {[
+                      "What does this code do?",
+                      "Explain the main function",
+                      "Find potential bugs",
+                      "How can I improve this?"
+                    ].map((suggestion, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setChatInput(suggestion);
+                          // Auto-send after a brief delay
+                          setTimeout(() => {
+                            const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+                            handleSendMessage();
+                          }, 100);
+                        }}
+                        className="text-[10px] md:text-xs px-2 py-1 bg-cyan-950/50 text-cyan-400 border border-cyan-800/50 rounded-full hover:bg-cyan-900/50 hover:border-cyan-600/50 transition-all font-mono"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <form 
                     onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
                     className="flex gap-2"
